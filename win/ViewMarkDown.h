@@ -54,6 +54,7 @@ public:
 	}
 
 	BEGIN_MSG_MAP(CMDView)
+		MESSAGE_RECORD(message_record)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 	END_MSG_MAP()
 

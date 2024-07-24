@@ -15,12 +15,14 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 typedef struct WinMsg
 {
-	U64 hwnd;
-	U16	msg;
-	U64	wp;
-	U64 lp;
+	HWND hWnd;
+	U16	 msg;
+	U64	 wp;
+	U64  lp;
+	U32  count;
 } WinMsg;
 
+#define WM_DISPLAY_MSG		(WM_APP + 1)
 #define WM_IGNORE_CLIP		(WM_APP + 2)
 #define WM_FULLSCR_ON_MAX	(WM_APP + 3)
 #define WM_GOT_CLIPDATA		(WM_APP + 4)
@@ -38,3 +40,23 @@ typedef struct WinMsg
 #define WM_DPICHANGED_AFTERPARENT	0x02E3
 #define WM_GETDPISCALEDSIZE			0x02E4
 
+extern WinMsg* g_pMSG;
+extern U16	msg_count;
+
+LRESULT message_record(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+char* get_message_name(U16 idx);
+
+#define MESSAGE_RECORD(func) \
+	{ \
+		lResult = func(m_hWnd, uMsg, wParam, lParam); \
+	}
+
+// These are defined in <windowsx.h> but we don't want to pull in whole header
+// And we need them because coordinates are signed when you have multi-monitor setup.
+#ifndef GET_X_PARAM
+#define GET_X_PARAM(lp) ((int)(short)LOWORD(lp))
+#endif
+
+#ifndef GET_Y_PARAM
+#define GET_Y_PARAM(lp) ((int)(short)HIWORD(lp))
+#endif

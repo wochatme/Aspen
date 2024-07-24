@@ -18,14 +18,67 @@
 
 CAppModule _Module;
 
-#define MAG_TABLE_SIZE		(1<<16)
+#define MAG_TABLE_SIZE		(1<<18)
 char* msg_name[MAG_TABLE_SIZE] = { 0 };
 
 const char* msg_xxx = "WM_XXXXXXXXXXXXXXXX";
 
+WinMsg* g_pMSG = NULL;
+U16	msg_count;
+static DWORD g_tid;
+
+LRESULT message_record(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	DWORD tid = GetCurrentThreadId();
+	if (tid == g_tid)
+	{
+		if (msg_count < MAG_TABLE_SIZE)
+		{
+			WinMsg* pm = g_pMSG + msg_count;
+			ATLASSERT(pm);
+
+			pm->count = 1;
+			pm->hWnd = hWnd;
+			pm->msg = (U16)uMsg;
+			pm->wp = wParam;
+			pm->lp = lParam;
+
+			if (msg_count > 0)
+			{
+				WinMsg* pmPrev = g_pMSG + (msg_count - 1);
+				if ((pmPrev->msg == pm->msg) && (pmPrev->hWnd == pm->hWnd))
+				{
+					pmPrev->count++;
+					return 0;
+				}
+			}
+			msg_count++;
+
+			if (msg_count >= MAG_TABLE_SIZE)
+			{
+				msg_count = 0;
+				ATLASSERT(0);
+			}
+		}
+	}
+	else 
+	{
+		ATLASSERT(0);
+		tid++;
+	}
+	return 0;
+}
+
+char* get_message_name(U16 idx)
+{
+	return(msg_name[idx]);
+}
+
 static void InitWinMessageName(void)
 {
 	U16 idx;
+
+	msg_count = 0;
 
 	for (int i = 0; i < MAG_TABLE_SIZE; i++)
 	{
@@ -36,7 +89,7 @@ static void InitWinMessageName(void)
 	idx = (WM_CREATE & 0xFFFF);                       msg_name[idx] = (char*)"WM_CREATE";
 	idx = (WM_DESTROY & 0xFFFF);                      msg_name[idx] = (char*)"WM_DESTROY";
 	idx = (WM_MOVE & 0xFFFF);                         msg_name[idx] = (char*)"WM_MOVE";
-	idx = (WM_SIZE & 0xFFFF);                         msg_name[idx] = (char*)"WM_SIZE";
+	idx = (WM_SIZE & 0xFFFF);                         msg_name[idx] = (char*)"WM_SIZ-E";
 	idx = (WM_ACTIVATE & 0xFFFF);                     msg_name[idx] = (char*)"WM_ACTIVATE";
 	idx = (WM_SETFOCUS & 0xFFFF);                     msg_name[idx] = (char*)"WM_SETFOCUS";
 	idx = (WM_KILLFOCUS & 0xFFFF);                    msg_name[idx] = (char*)"WM_KILLFOCUS";
@@ -171,15 +224,15 @@ static void InitWinMessageName(void)
 	idx = (WM_CTLCOLORSTATIC & 0xFFFF);               msg_name[idx] = (char*)"WM_CTLCOLORSTATIC";
 	idx = (WM_MOUSEFIRST & 0xFFFF);                   msg_name[idx] = (char*)"WM_MOUSEFIRST";
 	idx = (WM_MOUSEMOVE & 0xFFFF);                    msg_name[idx] = (char*)"WM_MOUSEMOVE";
-	idx = (WM_LBUTTONDOWN & 0xFFFF);                  msg_name[idx] = (char*)"WM_LBUTTONDOWN";
-	idx = (WM_LBUTTONUP & 0xFFFF);                    msg_name[idx] = (char*)"WM_LBUTTONUP";
-	idx = (WM_LBUTTONDBLCLK & 0xFFFF);                msg_name[idx] = (char*)"WM_LBUTTONDBLCLK";
-	idx = (WM_RBUTTONDOWN & 0xFFFF);                  msg_name[idx] = (char*)"WM_RBUTTONDOWN";
-	idx = (WM_RBUTTONUP & 0xFFFF);                    msg_name[idx] = (char*)"WM_RBUTTONUP";
-	idx = (WM_RBUTTONDBLCLK & 0xFFFF);                msg_name[idx] = (char*)"WM_RBUTTONDBLCLK";
-	idx = (WM_MBUTTONDOWN & 0xFFFF);                  msg_name[idx] = (char*)"WM_MBUTTONDOWN";
-	idx = (WM_MBUTTONUP & 0xFFFF);                    msg_name[idx] = (char*)"WM_MBUTTONUP";
-	idx = (WM_MBUTTONDBLCLK & 0xFFFF);                msg_name[idx] = (char*)"WM_MBUTTONDBLCLK";
+	idx = (WM_LBUTTONDOWN & 0xFFFF);                  msg_name[idx] = (char*)"WM_LBUTTON-DOWN";
+	idx = (WM_LBUTTONUP & 0xFFFF);                    msg_name[idx] = (char*)"WM_LBUTTON-UP";
+	idx = (WM_LBUTTONDBLCLK & 0xFFFF);                msg_name[idx] = (char*)"WM_LBUTTON-DBLCLK";
+	idx = (WM_RBUTTONDOWN & 0xFFFF);                  msg_name[idx] = (char*)"WM_RBUTTON-DOWN";
+	idx = (WM_RBUTTONUP & 0xFFFF);                    msg_name[idx] = (char*)"WM_RBUTTON-UP";
+	idx = (WM_RBUTTONDBLCLK & 0xFFFF);                msg_name[idx] = (char*)"WM_RBUTTON-DBLCLK";
+	idx = (WM_MBUTTONDOWN & 0xFFFF);                  msg_name[idx] = (char*)"WM_MBUTTON-DOWN";
+	idx = (WM_MBUTTONUP & 0xFFFF);                    msg_name[idx] = (char*)"WM_MBUTTON-UP";
+	idx = (WM_MBUTTONDBLCLK & 0xFFFF);                msg_name[idx] = (char*)"WM_MBUTTON-DBLCLK";
 	idx = (WM_MOUSEWHEEL & 0xFFFF);                   msg_name[idx] = (char*)"WM_MOUSEWHEEL";
 	idx = (WM_XBUTTONDOWN & 0xFFFF);                  msg_name[idx] = (char*)"WM_XBUTTONDOWN";
 	idx = (WM_XBUTTONUP & 0xFFFF);                    msg_name[idx] = (char*)"WM_XBUTTONUP";
@@ -193,7 +246,7 @@ static void InitWinMessageName(void)
 	idx = (WM_ENTERMENULOOP & 0xFFFF);                msg_name[idx] = (char*)"WM_ENTERMENULOOP";
 	idx = (WM_EXITMENULOOP & 0xFFFF);                 msg_name[idx] = (char*)"WM_EXITMENULOOP";
 	idx = (WM_NEXTMENU & 0xFFFF);                     msg_name[idx] = (char*)"WM_NEXTMENU";
-	idx = (WM_SIZING & 0xFFFF);                       msg_name[idx] = (char*)"WM_SIZING";
+	idx = (WM_SIZING & 0xFFFF);                       msg_name[idx] = (char*)"WM_SIZ-ING";
 	idx = (WM_CAPTURECHANGED & 0xFFFF);               msg_name[idx] = (char*)"WM_CAPTURECHANGED";
 	idx = (WM_MOVING & 0xFFFF);                       msg_name[idx] = (char*)"WM_MOVING";
 	idx = (WM_POWERBROADCAST & 0xFFFF);               msg_name[idx] = (char*)"WM_POWERBROADCAST";
@@ -209,8 +262,8 @@ static void InitWinMessageName(void)
 	idx = (WM_MDIICONARRANGE & 0xFFFF);               msg_name[idx] = (char*)"WM_MDIICONARRANGE";
 	idx = (WM_MDIGETACTIVE & 0xFFFF);                 msg_name[idx] = (char*)"WM_MDIGETACTIVE";
 	idx = (WM_MDISETMENU & 0xFFFF);                   msg_name[idx] = (char*)"WM_MDISETMENU";
-	idx = (WM_ENTERSIZEMOVE & 0xFFFF);                msg_name[idx] = (char*)"WM_ENTERSIZEMOVE";
-	idx = (WM_EXITSIZEMOVE & 0xFFFF);                 msg_name[idx] = (char*)"WM_EXITSIZEMOVE";
+	idx = (WM_ENTERSIZEMOVE & 0xFFFF);                msg_name[idx] = (char*)"WM_ENTER-SIZEMOVE";
+	idx = (WM_EXITSIZEMOVE & 0xFFFF);                 msg_name[idx] = (char*)"WM_EXIT-SIZEMOVE";
 	idx = (WM_DROPFILES & 0xFFFF);                    msg_name[idx] = (char*)"WM_DROPFILES";
 	idx = (WM_MDIREFRESHMENU & 0xFFFF);               msg_name[idx] = (char*)"WM_MDIREFRESHMENU";
 	idx = (WM_POINTERDEVICECHANGE & 0xFFFF);          msg_name[idx] = (char*)"WM_POINTERDEVICECHANGE";
@@ -320,15 +373,30 @@ static int AppInit(HINSTANCE hInstance)
 {
 	int ret = 0;
 
-	InitWinMessageName();
+	ATLASSERT(g_pMSG == NULL);
+	SIZE_T size = sizeof(WinMsg);
+	size *= MAG_TABLE_SIZE;
+
+	g_pMSG = (WinMsg*)VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
+	if (g_pMSG == NULL)
+		return 1;
 
 	if (Scintilla_RegisterClasses(hInstance) == 0)
-		ret = 1;
+		ret = 2;
+
+	InitWinMessageName();
+
 	return ret;
 }
 
 static int AppTerm(HINSTANCE hInstance = NULL)
 {
+	if (g_pMSG != NULL)
+	{
+		VirtualFree(g_pMSG, 0, MEM_RELEASE);
+		g_pMSG = NULL;
+	}
+
 	Scintilla_ReleaseResources();
 	return 0;
 }
@@ -336,6 +404,9 @@ static int AppTerm(HINSTANCE hInstance = NULL)
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPTSTR lpstrCmdLine, _In_ int nCmdShow)
 {
 	int nRet;
+
+	g_tid = GetCurrentThreadId();
+
 	HRESULT hRes = ::CoInitialize(NULL);
 	ATLASSERT(SUCCEEDED(hRes));
 
@@ -345,6 +416,16 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	hRes = _Module.Init(NULL, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
 
+#if 0
+	if (!SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)) 
+	{
+		OutputDebugStringW(L"WARNING: could not set DPI awareness");
+	}
+	else
+	{
+		OutputDebugStringW(L"INFO: could set DPI awareness");
+	}
+#endif
 	nRet = AppInit(hInstance);
 	if (nRet == 0)
 	{

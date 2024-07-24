@@ -12,7 +12,6 @@
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files
 #include <windows.h>
-
 // C RunTime Header Files
 #include <stdint.h>
 #include <stdbool.h>
@@ -22,6 +21,9 @@
 #include <memory.h>
 #include <tchar.h>
 #include <Mmsystem.h>
+
+#include <uxtheme.h>
+#include <vssym32.h>
 
 #include "scintilla/include/Sci_Position.h"
 #include "scintilla/include/scintilla.h"
@@ -41,6 +43,7 @@ extern CAppModule _Module;
 
 #include <atlwin.h>
 
+#pragma comment(lib, "uxtheme.lib")
 #pragma comment(lib, "Imm32.lib")
 
 #if defined _M_IX86
