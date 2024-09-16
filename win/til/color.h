@@ -210,11 +210,11 @@ namespace til // Terminal Implementation Library. Also: "Today I Learned"
             return !(*this == other);
         }
 
+#if 0
         std::wstring to_string() const
         {
             return ToHexString(false);
         }
-
         std::wstring ToHexString(const bool omitAlpha = false) const
         {
             auto str = fmt::format(FMT_COMPILE(L"#{:02X}{:02X}{:02X}{:02X}"), r, g, b, a);
@@ -224,6 +224,7 @@ namespace til // Terminal Implementation Library. Also: "Today I Learned"
             }
             return str;
         }
+#endif 
     };
 #pragma warning(pop)
 }

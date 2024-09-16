@@ -9,6 +9,7 @@ class CMainFrame :
 	public CUpdateUI<CMainFrame>,
 	public CMessageFilter, public CIdleHandler
 {
+	UINT m_nDPI = 0;
 public:
 	DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME)
 #if 0
@@ -30,21 +31,14 @@ public:
 	}
 
 	BEGIN_UPDATE_UI_MAP(CMainFrame)
-#if 0
-		UPDATE_ELEMENT(ID_VIEW_TOOLBAR, UPDUI_MENUPOPUP)
-		UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
-#endif 
 	END_UPDATE_UI_MAP()
 
 	BEGIN_MSG_MAP(CMainFrame)
+		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 #if 0
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
-		COMMAND_ID_HANDLER(ID_FILE_NEW, OnFileNew)
-		COMMAND_ID_HANDLER(ID_VIEW_TOOLBAR, OnViewToolBar)
-		COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
-		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 #endif 
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
@@ -57,36 +51,48 @@ public:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
-#if 0
-		// create command bar window
-		HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
-		// attach menu
-		m_CmdBar.AttachMenu(GetMenu());
-		// load command bar images
-		m_CmdBar.LoadImages(IDR_MAINFRAME);
-		// remove old menu
-		SetMenu(NULL);
-
-		HWND hWndToolBar = CreateSimpleToolBarCtrl(m_hWnd, IDR_MAINFRAME, FALSE, ATL_SIMPLE_TOOLBAR_PANE_STYLE);
-
-		CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
-		AddSimpleReBarBand(hWndCmdBar);
-		AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
-
-		CreateSimpleStatusBar();
-
-		m_hWndClient = m_view.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL | WS_VSCROLL, WS_EX_CLIENTEDGE);
-		UIAddToolBar(hWndToolBar);
-		UISetCheck(ID_VIEW_TOOLBAR, 1);
-		UISetCheck(ID_VIEW_STATUS_BAR, 1);
-#endif 
-
 		// register object for message filtering and idle updates
 		CMessageLoop* pLoop = _Module.GetMessageLoop();
 		ATLASSERT(pLoop != NULL);
 		pLoop->AddMessageFilter(this);
 		pLoop->AddIdleHandler(this);
 
+		m_nDPI = GetDpiForWindow(m_hWnd);
+#if 0
+		m_hWndClient = CreateWindowExW(0, L"Scintilla", NULL,
+			WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_HSCROLL,
+			0, 0, 16, 16, m_hWnd, NULL, HINST_THISCOMPONENT, NULL);
+
+		if (::IsWindow(m_hWndClient))
+		{
+			::SendMessage(m_hWndClient, SCI_SETTECHNOLOGY, SC_TECHNOLOGY_DIRECTWRITE, 0);
+			::SendMessage(m_hWndClient, SCI_SETCODEPAGE, SC_CP_UTF8, 0);
+			::SendMessage(m_hWndClient, SCI_SETEOLMODE, SC_EOL_LF, 0);
+			::SendMessage(m_hWndClient, SCI_SETWRAPMODE, SC_WRAP_WORD, 0);
+			::SendMessage(m_hWndClient, SCI_STYLESETFONT, STYLE_DEFAULT, (LPARAM)"Courier New");
+			::SendMessage(m_hWndClient, SCI_STYLESETSIZEFRACTIONAL, STYLE_DEFAULT, 1300);
+
+			//::SendMessage(m_hWnd, SCI_STYLESETBACK, STYLE_LINENUMBER, RGB(255, 255, 255));
+			//::SendMessage(m_hWnd, SCI_SETMARGINWIDTHN, 1, 2);
+			::SendMessage(m_hWndClient, SCI_SETPHASESDRAW, SC_PHASES_MULTIPLE, 0);
+
+			::SendMessage(m_hWndClient, SCI_SETMARGINWIDTHN, 0, 0);
+			::SendMessage(m_hWndClient, SCI_SETMARGINS, 0, 0);
+			::SendMessage(m_hWndClient, SCI_SETMARGINLEFT, 0, 0);
+#if 0
+			::SendMessage(m_hWndClient, SCI_STYLESETBACK, STYLE_LINENUMBER, RGB(0, 0, 0));
+			::SendMessage(m_hWndClient, SCI_STYLESETBACK, STYLE_DEFAULT, RGB(13, 13, 13));
+			::SendMessage(m_hWndClient, SCI_STYLESETFORE, STYLE_DEFAULT, RGB(250, 250, 250));
+			::SendMessage(m_hWndClient, SCI_SETCARETFORE, RGB(250, 250, 250), 0);
+			::SendMessage(m_hWndClient, SCI_STYLECLEARALL, 0, 0);
+
+			::SetWindowTheme(m_hWndClient, L"DarkMode_Explorer", nullptr);
+#endif 
+#if 0
+			::SendMessage(m_hWnd, SCI_SETVSCROLLBAR, 0, 0);
+#endif 
+		}
+#endif 
 		return 0;
 	}
 
@@ -102,41 +108,15 @@ public:
 		return 1;
 	}
 
+	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+	{
+		auto dpiWindow = GetDpiForWindow(m_hWnd);
+
+		bHandled = FALSE;
+		return 0;
+	}
+
 #if 0
-	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-	{
-		PostMessage(WM_CLOSE);
-		return 0;
-	}
-
-	LRESULT OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-	{
-		// TODO: add code to initialize document
-
-		return 0;
-	}
-
-	LRESULT OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-	{
-		static BOOL bVisible = TRUE;	// initially visible
-		bVisible = !bVisible;
-		CReBarCtrl rebar = m_hWndToolBar;
-		int nBandIndex = rebar.IdToIndex(ATL_IDW_BAND_FIRST + 1);	// toolbar is 2nd added band
-		rebar.ShowBand(nBandIndex, bVisible);
-		UISetCheck(ID_VIEW_TOOLBAR, bVisible);
-		UpdateLayout();
-		return 0;
-	}
-
-	LRESULT OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-	{
-		BOOL bVisible = !::IsWindowVisible(m_hWndStatusBar);
-		::ShowWindow(m_hWndStatusBar, bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
-		UISetCheck(ID_VIEW_STATUS_BAR, bVisible);
-		UpdateLayout();
-		return 0;
-	}
-
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
 		CAboutDlg dlg;
