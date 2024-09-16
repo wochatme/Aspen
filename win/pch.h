@@ -136,12 +136,14 @@ extern CAppModule _Module;
 #include <dwrite.h>
 #include <dwmapi.h>
 
+#include <shellscalingapi.h>
 #include <uxtheme.h>
 #include <vssym32.h>
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "uxtheme.lib")
 #pragma comment(lib, "Imm32.lib")
+#pragma comment(lib, "Shcore.lib")
 
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "dwrite.lib")
