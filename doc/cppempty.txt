@@ -1,0 +1,1 @@
+printf "#if 0\n\n\n\n#endif\n\n\n" > allocator/allocator_check.cpp

@@ -35,6 +35,7 @@ class CMainFrame :
 	public CMessageFilter, public CIdleHandler
 {
 	UINT m_nDPI = 0;
+	UINT m_dpi = 0;
 public:
 	DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME)
 #if 0
@@ -60,6 +61,7 @@ public:
 
 	BEGIN_MSG_MAP(CMainFrame)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
+		MESSAGE_HANDLER(WM_DPICHANGED, OnDPIChanged)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 #if 0
@@ -119,6 +121,12 @@ public:
 #endif 
 		}
 #endif 
+		WCHAR title[64] = { 0 };
+		m_dpi++;
+		m_nDPI = GetDpiForWindow(m_hWnd);
+		swprintf_s(title, 63, L"[%d] DPI: %d", m_dpi, m_nDPI);
+		SetWindowText(title);
+
 		return 0;
 	}
 
@@ -132,6 +140,20 @@ public:
 
 		bHandled = FALSE;
 		return 1;
+	}
+
+	LRESULT OnDPIChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+	{
+		RECT rb = { 0 };
+		WCHAR title[64] = { 0 };
+		m_dpi++;
+		m_nDPI = GetDpiForWindow(m_hWnd);
+
+		DwmGetWindowAttribute(m_hWnd, DWMWA_CAPTION_BUTTON_BOUNDS, &rb, sizeof(RECT));
+		//swprintf_s(title, 63, L"[%d]D:%d, R:%d %d %d %d", m_dpi, m_nDPI, rb.left, rb.right, rb.top, rb.botttom);
+		swprintf_s(title, 63, L"[%d]D:%d, R:%d %d, %d %d", m_dpi, m_nDPI, rb.left, rb.right-rb.left, rb.top, rb.bottom - rb.top);
+		SetWindowText(title);
+		return 0L;
 	}
 
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)

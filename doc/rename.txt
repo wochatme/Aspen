@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use File::Find;
+use File::Copy;
+use File::Spec;
+
+# Define the starting directory
+my $starting_dir = 'base'; # Replace with your directory path
+
+# Function to process each file
+sub rename_files {
+    # Get the full path of the file
+    my $file = $File::Find::name;
+	# print "Renaming $file ---- \n";
+    # Check if it's a file with the .cc extension
+    if (-f $file && $file =~ /\.cc$/) {
+        # Construct the new filename with .cpp extension
+        # (my $new_name = $file) =~ s/\.cc$/.cpp/;
+
+        # print "Renaming $file to $new_name\n";
+		print "Renaming $file to \n";
+
+        # Rename the file
+        # move($file, $new_name) or warn "Failed to rename $file: $!";
+    }
+}
+
+# Use File::Find to traverse the directory
+find(\&rename_files, $starting_dir);
+
+print "Renaming completed.\n";
+
+# find base -type f -name "*.cc" -exec bash -c 'mv "$0" "${0%.cc}.cpp"' {} \;
+

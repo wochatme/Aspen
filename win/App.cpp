@@ -113,9 +113,13 @@ static int AppRun(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 static int AppInit(HINSTANCE hInstance)
 {
 	int ret = 0;
+	DPI_AWARENESS_CONTEXT dpiOld;
+
 	g_Quit = 0;
 	g_threadCount = 0;
 	g_threadCountBKG = 0;
+
+	dpiOld = SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
 	if (!LoadD2D())
 		return 1;
