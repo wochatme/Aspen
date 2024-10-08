@@ -24,5 +24,6 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded
 target_include_directories(${PROJECT_NAME} 
     PUBLIC ${PROJECT_SOURCE_DIR} 
            ${CMAKE_SOURCE_DIR}/chromium
+           ${CMAKE_SOURCE_DIR}/chromium/gen
            )
            
